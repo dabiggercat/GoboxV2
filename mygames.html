@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Games Editor</title>
+  <style>
+    body { background: #121026; color: bisque; font-family: sans-serif; }
+    #gamesList li { cursor: pointer; margin: 5px 0; padding: 5px; border: 1px solid bisque; display: inline-block; }
+    #editor { width: 600px; height: 400px; border: 2px solid bisque; margin-top: 20px; position: relative; }
+  </style>
+</head>
+<body>
+  <h2>My Games</h2>
+  <ul id="gamesList"></ul>
+
+  <h3>Editor</h3>
+  <div id="editor"></div>
+  <button id="saveBtn">Save Game</button>
+  <p id="msg"></p>
+
+  <script type="module">
+    import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+    // firebase config
+    const firebaseConfig = {
+  apiKey: "AIzaSyCuJwwNCvXQ0Swe4Mo5rVLv1aRQzmQwfe8",
+  authDomain: "gobox-17421.firebaseapp.com",
+  projectId: "gobox-17421",
+  storageBucket: "gobox-17421.firebasestorage.app",
+  messagingSenderId: "201898100467",
+  appId: "1:201898100467:web:6f84e6719f678a5dbe1986",
+  measurementId: "G-83Y26S09S8"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const gamesList = document.getElementById("gamesList");
+    const editor = document.getElementById("editor");
+    const saveBtn = document.getElementById("saveBtn");
+    const msg = document.getElementById("msg");
+
+    let currentGameId = null;
+    let currentGameData = {};
+
+    // get current user
+    const user = auth.currentUser;
+    if (!user) {
+      window.location.href = "login.html";
+    }
+
+    async function loadMyGames() {
+      const q = query(collection(db, "games"), where("ownerUID", "==", user.uid));
+      const snapshot = await getDocs(q);
+      snapshot.forEach(docSnap => {
+        const li = document.createElement("li");
+        li.innerText = docSnap.data().name;
+        li.addEventListener("click", () => loadGame(docSnap.id, docSnap.data()));
+        gamesList.appendChild(li);
+      });
+    }
+
+    function loadGame(id, data) {
+      currentGameId = id;
+      currentGameData = data;
+
+      // clear editor and render game blocks
+      editor.innerHTML = "";
+      data.blocks.forEach(block => {
+        const b = document.createElement("div");
+        b.style.position = "absolute";
+        b.style.left = block.x + "px";
+        b.style.top = block.y + "px";
+        b.style.width = block.width + "px";
+        b.style.height = block.height + "px";
+        b.style.backgroundColor = block.color;
+        editor.appendChild(b);
+      });
+    }
+
+    saveBtn.addEventListener("click", async () => {
+      if (!currentGameId) return;
+      // grab blocks from editor
+      const blocks = Array.from(editor.children).map(b => ({
+        x: parseInt(b.style.left),
+        y: parseInt(b.style.top),
+        width: parseInt(b.style.width),
+        height: parseInt(b.style.height),
+        color: b.style.backgroundColor
+      }));
+
+      await updateDoc(doc(db, "games", currentGameId), { blocks });
+      msg.innerText = "Game saved!";
+    });
+
+    loadMyGames();
+  </script>
+</body>
+</html>
