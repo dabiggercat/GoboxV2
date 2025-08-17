@@ -80,15 +80,15 @@
 
     // key listeners
     window.addEventListener("keydown", e => {
-      if (e.code === "ArrowLeft") keys.left = true;
-      if (e.code === "ArrowRight") keys.right = true;
-      if (e.code === "ArrowUp") keys.up = true;
+      if (e.code === "A") keys.left = true;
+      if (e.code === "D") keys.right = true;
+      if (e.code === "W") keys.up = true;
     });
 
     window.addEventListener("keyup", e => {
-      if (e.code === "ArrowLeft") keys.left = false;
-      if (e.code === "ArrowRight") keys.right = false;
-      if (e.code === "ArrowUp") keys.up = false;
+      if (e.code === "A") keys.left = false;
+      if (e.code === "D") keys.right = false;
+      if (e.code === "W") keys.up = false;
     });
 
     function collision(playerRect, blockRect) {
@@ -184,3 +184,4 @@
   </script>
 </body>
 </html>
+
