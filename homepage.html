@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Homepage</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: #1f0f2f;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding-top: 20px;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 500px;
+      padding: 40px;
+      border-radius: 15px;
+      background: #121026;
+      border: 3px solid bisque;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transition: all 1s ease;
+      z-index: 10;
+    }
+
+    .container.slide-container-up {
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 20px;
+    }
+
+    #welcome {
+      font-size: 28px;
+      color: #fff;
+      opacity: 0;
+      transition: all 1s ease;
+    }
+
+    #welcome.slide-up {
+      font-size: 20px;
+      opacity: 1;
+    }
+
+    .topleft-container {
+      position: fixed;
+      top: 80px;
+      left: 20px;
+      z-index: 5;
+    }
+
+    .topleft {
+      font-size: 20px;
+      color: #fff;
+      background: #121026;
+      border: 2px solid bisque;
+      padding: 10px 15px;
+      border-radius: 10px;
+    }
+
+    .games-list {
+      list-style: none;
+      margin-top: 300px;
+      padding: 0;
+      width: 180px;
+    }
+
+    .games-list li {
+      background: #1f0f2f;
+      color: #fff;
+      border: 2px solid bisque;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .games-list li:hover {
+      background: #2a1a45;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="mainContainer">
+    <p id="welcome">Welcome!</p>
+  </div>
+
+  <div class="topleft-container">
+    <a href="games.html"><p class="topleft">Games</p></a>
+    <a href="editor.html"><p class="topleft">Editor</p></div></a>
+    <ul class="games-list" id="gamesList">
+      <!-- existing games will be loaded here -->
+    </ul>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+      apiKey: "AIzaSyCuJwwNCvXQ0Swe4Mo5rVLv1aRQzmQwfe8",
+      authDomain: "gobox-17421.firebaseapp.com",
+      projectId: "gobox-17421",
+      storageBucket: "gobox-17421.firebasestorage.app",
+      messagingSenderId: "201898100467",
+      appId: "1:201898100467:web:6f84e6719f678a5dbe1986",
+      measurementId: "G-83Y26S09S8"
+  };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const username = localStorage.getItem("username") || "guest";
+    const welcome = document.getElementById("welcome");
+    const container = document.getElementById("mainContainer");
+
+    welcome.innerText = "Welcome " + username;
+
+    setTimeout(() => {
+      welcome.classList.add("slide-up");
+      container.classList.add("slide-container-up");
+    }, 100);
+
+    const gamesList = document.getElementById("gamesList");
+
+    async function loadGames() {
+      const querySnapshot = await getDocs(collection(db, "games"));
+      // inside your loadGames function
+querySnapshot.forEach((doc) => {
+  const li = document.createElement("li");
+  li.innerText = doc.data().name;
+
+  // --- THIS IS WHERE YOU ADD IT ---
+  li.addEventListener("click", () => {
+    // save selected game name to localStorage
+    localStorage.setItem("currentGame", doc.data().name);
+    // go to play page
+    window.location.href = "playgame.html";
+  });
+
+  gamesList.appendChild(li);
+});
+
+    }
+
+    loadGames();
+  </script>
+</body>
+</html>

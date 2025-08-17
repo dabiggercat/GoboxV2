@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game Editor</title>
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+  <h2 id="editorTitle">Game Editor</h2>
+  <div id="toolbar">
+  <input type="text" id="gameName" placeholder="Enter game name">
+  <button id="addBlock">Add Block</button>
+  <button id="clearCanvas">Clear</button>
+  <button id="saveGame">Save</button>
+</div>
+
+  <div id="canvas"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+// --- Firebase config ---
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCuJwwNCvXQ0Swe4Mo5rVLv1aRQzmQwfe8",
+  authDomain: "gobox-17421.firebaseapp.com",
+  projectId: "gobox-17421",
+  storageBucket: "gobox-17421.firebasestorage.app",
+  messagingSenderId: "201898100467",
+  appId: "1:201898100467:web:6f84e6719f678a5dbe1986",
+  measurementId: "G-83Y26S09S8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// --- DOM elements ---
+const canvas = document.getElementById("canvas");
+const addBlockBtn = document.getElementById("addBlock");
+const clearCanvasBtn = document.getElementById("clearCanvas");
+const saveGameBtn = document.getElementById("saveGame");
+const gameNameInput = document.getElementById("gameName");
+
+// --- make blocks draggable ---
+function makeDraggable(el) {
+  let offsetX = 0, offsetY = 0;
+
+  el.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    offsetX = e.clientX - el.getBoundingClientRect().left;
+    offsetY = e.clientY - el.getBoundingClientRect().top;
+
+    function move(e) {
+      let x = e.clientX - offsetX - canvas.getBoundingClientRect().left;
+      let y = e.clientY - offsetY - canvas.getBoundingClientRect().top;
+      x = Math.max(0, Math.min(x, canvas.clientWidth - el.clientWidth));
+      y = Math.max(0, Math.min(y, canvas.clientHeight - el.clientHeight));
+      el.style.left = x + "px";
+      el.style.top = y + "px";
+    }
+
+    function stop() {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", stop);
+    }
+
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", stop);
+  });
+}
+
+// --- add block ---
+addBlockBtn.addEventListener("click", () => {
+  const block = document.createElement("div");
+  block.classList.add("block");
+  block.style.left = Math.random() * (canvas.clientWidth - 40) + "px";
+  block.style.top = Math.random() * (canvas.clientHeight - 40) + "px";
+  canvas.appendChild(block);
+  makeDraggable(block);
+});
+
+// --- clear canvas ---
+clearCanvasBtn.addEventListener("click", () => {
+  canvas.innerHTML = "";
+});
+
+// --- save game ---
+saveGameBtn.addEventListener("click", async () => {
+  const blocks = canvas.querySelectorAll(".block");
+  const layout = [];
+
+  blocks.forEach(block => {
+    layout.push({
+      x: parseFloat(block.style.left),
+      y: parseFloat(block.style.top)
+    });
+  });
+
+  const gameName = gameNameInput.value.trim();
+  if (!gameName) {
+    alert("Enter a name for your game!");
+    return;
+  }
+
+  try {
+    const username = localStorage.getItem("username") || "guest";
+
+    // save to Firebase
+    await setDoc(doc(db, "games", gameName), {
+      name: gameName,
+      creator: username,
+      blocks: layout,
+      updatedAt: new Date()
+    });
+
+    // optional: save to localStorage
+    localStorage.setItem("lastGame", JSON.stringify({
+      name: gameName,
+      blocks: layout
+    }));
+
+    alert("Game saved successfully!");
+  } catch (err) {
+    console.error(err);
+    alert("Error saving game.");
+  }
+});
+
+</script>
+
+</body>
+</html>

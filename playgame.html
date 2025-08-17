@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Play Game</title>
+  <style>
+    body { background: #121026; display: flex; justify-content: center; margin: 0; }
+    #gameContainer {
+      width: 800px;
+      height: 500px;
+      background: #121026;
+      position: relative;
+      border: 3px solid bisque;
+      overflow: hidden;
+    }
+    .block {
+      width: 50px;
+      height: 50px;
+      background: darkpurple;
+      position: absolute;
+      border: 2px solid bisque;
+    }
+    #player {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameContainer">
+    <img id="player" src="assets/Player.png" />
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCuJwwNCvXQ0Swe4Mo5rVLv1aRQzmQwfe8",
+    authDomain: "gobox-17421.firebaseapp.com",
+    projectId: "gobox-17421",
+    storageBucket: "gobox-17421.firebasestorage.app",
+    messagingSenderId: "201898100467",
+    appId: "1:201898100467:web:6f84e6719f678a5dbe1986",
+    measurementId: "G-83Y26S09S8"
+  };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const gameContainer = document.getElementById("gameContainer");
+    const player = document.getElementById("player");
+    const currentGameName = localStorage.getItem("currentGame");
+
+    // player state
+    let playerData = { x: 400, y: 470, vy: 0, onGround: false };
+    const gravity = 0.7;
+    const keys = { left: false, right: false, up: false };
+
+    // load blocks from firebase
+    async function loadGame() {
+      const docRef = doc(db, "games", currentGameName);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        alert("Game not found!");
+        return;
+      }
+
+      const blocks = docSnap.data().blocks;
+      blocks.forEach(b => {
+        const block = document.createElement("div");
+        block.classList.add("block");
+        block.style.left = b.x + "px";
+        block.style.top = b.y + "px";
+        gameContainer.appendChild(block);
+      });
+    }
+
+    loadGame();
+
+    // key listeners
+    window.addEventListener("keydown", e => {
+      if (e.code === "ArrowLeft") keys.left = true;
+      if (e.code === "ArrowRight") keys.right = true;
+      if (e.code === "ArrowUp") keys.up = true;
+    });
+
+    window.addEventListener("keyup", e => {
+      if (e.code === "ArrowLeft") keys.left = false;
+      if (e.code === "ArrowRight") keys.right = false;
+      if (e.code === "ArrowUp") keys.up = false;
+    });
+
+    function collision(playerRect, blockRect) {
+      return !(
+        playerRect.bottom < blockRect.top ||
+        playerRect.top > blockRect.bottom ||
+        playerRect.right < blockRect.left ||
+        playerRect.left > blockRect.right
+      );
+    }
+
+    function gameLoop() {
+      const blocks = document.querySelectorAll(".block");
+
+      // --- horizontal movement ---
+      let newX = playerData.x;
+      if (keys.left) newX -= 5;
+      if (keys.right) newX += 5;
+
+      // horizontal collision
+      blocks.forEach(block => {
+        const rect = {
+          left: parseFloat(block.style.left),
+          top: parseFloat(block.style.top),
+          right: parseFloat(block.style.left) + 50,
+          bottom: parseFloat(block.style.top) + 50
+        };
+        if (
+          newX + 30 > rect.left &&
+          newX < rect.right &&
+          playerData.y + 30 > rect.top &&
+          playerData.y < rect.bottom
+        ) {
+          if (keys.left) newX = rect.right;
+          if (keys.right) newX = rect.left - 30;
+        }
+      });
+      playerData.x = newX;
+
+      // --- jump ---
+      if (keys.up && playerData.onGround) {
+        playerData.vy = -12;
+        playerData.onGround = false;
+      }
+
+      // --- vertical movement ---
+      playerData.vy += gravity;
+      let newY = playerData.y + playerData.vy;
+      playerData.onGround = false;
+
+      blocks.forEach(block => {
+        const rect = {
+          left: parseFloat(block.style.left),
+          top: parseFloat(block.style.top),
+          right: parseFloat(block.style.left) + 50,
+          bottom: parseFloat(block.style.top) + 50
+        };
+
+        if (
+          playerData.x + 30 > rect.left &&
+          playerData.x < rect.right &&
+          newY + 30 > rect.top &&
+          newY < rect.bottom
+        ) {
+          if (playerData.vy > 0) { // falling
+            newY = rect.top - 30;
+            playerData.vy = 0;
+            playerData.onGround = true;
+          } else if (playerData.vy < 0) { // ceiling
+            newY = rect.bottom;
+            playerData.vy = 0;
+          }
+        }
+      });
+
+      // floor
+      if (newY + 30 >= gameContainer.clientHeight) {
+        newY = gameContainer.clientHeight - 30;
+        playerData.vy = 0;
+        playerData.onGround = true;
+      }
+
+      playerData.y = newY;
+
+      // --- update player ---
+      player.style.left = playerData.x + "px";
+      player.style.top = playerData.y + "px";
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+/* general reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* body style */
+body {
+  background: #1f0f2f;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+
+/* container rectangle */
+.container {
+  width: 90%;
+  max-width: 500px;
+  padding: 40px;
+  border-radius: 15px;
+  background: #121026;
+  border: 3px solid bisque; /* outline */
+  box-shadow: 0 0 20px bisque, 0 0 15px rgba(0,0,0,0.5); /* glow + depth */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 1s ease;
+  z-index: 10;
+}
+
+/* slide container to top */
+.container.slide-container-up {
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 20px;
+}
+
+/* welcome message */
+#welcome {
+  font-size: 28px;
+  color: #fff;
+  opacity: 0;
+  transition: all 1s ease;
+}
+
+/* slide welcome with container */
+#welcome.slide-up {
+  font-size: 20px;
+  opacity: 1;
+}
+
+/* top-left container for games */
+/* top-left container for games */
+.topleft-container {
+  position: fixed;
+  top: 80px; /* below the main container */
+  left: 20px;
+  z-index: 5;
+}
+
+/* box around the text */
+.topleft {
+  font-size: 20px;
+  color: #fff;
+  background: #121026;   /* same dark rectangle style */
+  border: 2px solid bisque; /* outline */
+  padding: 10px 15px;
+  border-radius: 10px;
+}

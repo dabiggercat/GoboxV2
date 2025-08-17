@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <style>
+    body { background: #121026; color: bisque; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .login-box {
+      background: #1a1a3a;
+      padding: 30px;
+      border: 2px solid bisque;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      padding: 10px 20px;
+      background: darkpurple;
+      color: bisque;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    p { font-size: 14px; margin-top: 10px; }
+    a { color: bisque; text-decoration: underline; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button id="loginBtn">Login</button>
+    <p>Don't have an account? <a href="signup.html">click here</a></p>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCuJwwNCvXQ0Swe4Mo5rVLv1aRQzmQwfe8",
+    authDomain: "gobox-17421.firebaseapp.com",
+    projectId: "gobox-17421",
+    storageBucket: "gobox-17421.firebasestorage.app",
+    messagingSenderId: "201898100467",
+    appId: "1:201898100467:web:6f84e6719f678a5dbe1986",
+    measurementId: "G-83Y26S09S8"
+  };
+
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const loginBtn = document.getElementById("loginBtn");
+
+    loginBtn.addEventListener("click", async () => {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      if (!username || !password) {
+        alert("Enter both username and password!");
+        return;
+      }
+
+      const docRef = doc(db, "users", username);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists() && docSnap.data().password === password) {
+        // save username locally
+        localStorage.setItem("username", username);
+        // go to homepage
+        window.location.href = "homepage.html";
+      } else {
+        alert("Invalid username or password");
+      }
+    });
+  </script>
+</body>
+</html>

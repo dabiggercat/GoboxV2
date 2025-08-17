@@ -1,0 +1,53 @@
+body {
+  background: #1f0f2f;
+  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+#toolbar {
+  margin-bottom: 15px;
+}
+
+#toolbar button {
+  padding: 8px 12px;
+  margin-right: 10px;
+  border-radius: 8px;
+  border: 2px solid bisque;
+  background: #121026;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#toolbar button:hover {
+  background: #2a1a45;
+}
+
+#canvas {
+  width: 800px;
+  height: 500px;
+  background: #121026;
+  position: relative;
+  border: 3px solid bisque;
+  margin: 20px auto;
+}
+
+
+/* blocks */
+.block {
+  width: 40px;
+  height: 40px;
+  background: #6b34d9;
+  position: absolute;
+  border: 2px solid bisque;
+  border-radius: 5px;
+  cursor: grab;
+}
